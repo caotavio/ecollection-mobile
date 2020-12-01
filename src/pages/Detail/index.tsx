@@ -1,16 +1,64 @@
-import React from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Image, Text, TouchableOpacity, Linking } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { RectButton } from 'react-native-gesture-handler';
+import api from '../../services/api';
+import * as MailComposer from 'expo-mail-composer';
+
+interface Params {
+  point_id: number;
+}
+
+interface Data {
+  point: {
+    image: string;
+    name: string;
+    email: string;
+    mobile: string;
+    city: string;
+    province: string;
+  };
+  items: {
+    title: string;
+  }[]
+}
 
 const Detail = () => {
+  const [data, setData] = useState<Data>({} as Data)
+
   const navigation = useNavigation();
+  const route = useRoute();
+
+  const routeParams = route.params as Params;
+
+  useEffect(() => {
+    api.get(`points/${routeParams.point_id}`).then(response => {
+      setData(response.data);
+    });
+  }, []);
 
   function handleNavigateBack() {
     navigation.goBack();
   }
+  
+  // TODO : fix to send sms
+  function handleMobile() {
+    Linking.openURL(`whatsapp://send?phone=${data.point.mobile}&text= I have an interest in residue collection`);
+  }
+
+  function handleComposeMail() {
+    MailComposer.composeAsync({
+      subject: 'Interested in residue collection',
+      recipients: [data.point.email]
+    });
+  }
+
+  // TODO : set a loading screeen
+  if (!data.point) {
+    return null;
+  } 
 
   return (
     <>
@@ -19,23 +67,25 @@ const Detail = () => {
           <Icon name="arrow-left" size={20} color="#34cb79" />
         </TouchableOpacity>
 
-        <Image style={styles.pointImage} source={{ uri:'https://images.unsplash.com/photo-1563421743460-1ee3c68f0ddf?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=400&q=60' }} />
-        <Text style={styles.pointName}>Tav's Park</Text>
-        <Text style={styles.pointItems}>Lamps, Kitchen Oil, Electronics</Text>
+        <Image style={styles.pointImage} source={{ uri: data.point.image }} />
+        <Text style={styles.pointName}>{data.point.name}</Text>
+        <Text style={styles.pointItems}>
+          {data.items.map(item => item.title).join(', ')}
+        </Text>
 
         <View style={styles.address}>
           <Text style={styles.addressTitle}>Address</Text>
-          <Text style={styles.addressContent}>Toronto, ON</Text>
+          <Text style={styles.addressContent}>{data.point.city}, {data.point.province}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <RectButton style={styles.button} onPress={() => {}}>
+        <RectButton style={styles.button} onPress={handleMobile}>
           <Icon name="smartphone" size={20} color="#FFF" />
           <Text style={styles.buttonText}>Mobile</Text>
         </RectButton>
 
-        <RectButton style={styles.button} onPress={() => {}}>
+        <RectButton style={styles.button} onPress={handleComposeMail}>
           <Icon name="mail" size={20} color="#FFF" />
           <Text style={styles.buttonText}>E-mail</Text>
         </RectButton>

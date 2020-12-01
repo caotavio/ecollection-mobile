@@ -1,42 +1,102 @@
-import React from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Feather as Icon } from '@expo/vector-icons'
-import { Image, View, StyleSheet, Text, ImageBackground } from 'react-native';
+import { Image, View, StyleSheet, Text, ImageBackground, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
-
+import RNPickerSelect from 'react-native-picker-select';
 
 const Home = () => {
   const navigation = useNavigation();
+  
+  const [province, setProvince] = useState('');
+  const [city, setCity] = useState('');
 
   function handleNavigateToPoints() {
-    navigation.navigate('Points');
+    navigation.navigate('Points', {
+      province,
+      city
+    });
   }
 
   return (
-    <ImageBackground
-      source={require("../../assets/home-background.png")}
-      style={styles.container}
-      imageStyle={{ width: 274, height: 368 }}
-    >
-      <View style={styles.main}>
-        <Image source={require("../../assets/logo_ecollection.png")} />
-        <Text style={styles.title}>Your marketplace for residue collection</Text>
-        <Text style={styles.description}>We help people find collection points all around Canada efficiently.</Text>
-      </View>
-
-      <View style={styles.footer}>
-        <RectButton style={styles.button} onPress={handleNavigateToPoints}>
-          <View style={styles.buttonIcon}>
-            <Text>
-              <Icon name="arrow-right" color="#FFF" size={24} />
-            </Text>
+    <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ImageBackground
+        source={require("../../assets/home-background.png")}
+        style={styles.container}
+        imageStyle={{ width: 274, height: 368 }}
+      >
+        <View style={styles.main}>
+          <Image source={require("../../assets/logo_ecollection.png")} />
+          <View>
+            <Text style={styles.title}>Your marketplace for residue collection</Text>
+            <Text style={styles.description}>We help people find collection points all around Canada efficiently.</Text>
           </View>
-          <Text style={styles.buttonText}>
-            Login
-          </Text>
-        </RectButton>
-      </View>
-    </ImageBackground>
+        </View>
+
+        <View style={styles.footer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type in your province..."
+            autoCorrect={false}
+            value={province}
+            onChangeText={text => setProvince(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Type in your city..."
+            autoCorrect={false}
+            value={city}
+            onChangeText={text => setCity(text)}
+          />
+          {/* <RNPickerSelect
+          useNativeAndroidPickerStyle={false}
+          touchableWrapperProps={{
+            style: {
+              backgroundColor: '#FFF',
+              height: 60,
+              padding: 15,
+              borderRadius: 10,
+              marginBottom: 10
+            }
+          }}
+            onValueChange={(value) => console.log(value)}
+            items={[
+              { label: 'Football', value: 'football' },
+              { label: 'Baseball', value: 'baseball' },
+              { label: 'Hockey', value: 'hockey' },
+            ]}
+          />
+          <RNPickerSelect
+            useNativeAndroidPickerStyle={false}
+            touchableWrapperProps={{
+              style: {
+                backgroundColor: '#FFF',
+                height: 60,
+                padding: 15,
+                borderRadius: 10,
+                marginBottom: 20
+              }
+            }}
+            onValueChange={(value) => console.log(value)}
+            items={[
+                { label: 'Football', value: 'football' },
+                { label: 'Baseball', value: 'baseball' },
+                { label: 'Hockey', value: 'hockey' },
+            ]}
+          /> */}
+          <RectButton style={styles.button} onPress={handleNavigateToPoints}>
+            <View style={styles.buttonIcon}>
+              <Text>
+                <Icon name="arrow-right" color="#FFF" size={24} />
+              </Text>
+            </View>
+            <Text style={styles.buttonText}>
+              Find
+            </Text>
+          </RectButton>
+        </View>
+      </ImageBackground>
+    </KeyboardAvoidingView>
   )
 }
 
